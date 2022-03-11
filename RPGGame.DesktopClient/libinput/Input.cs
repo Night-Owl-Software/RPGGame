@@ -14,18 +14,19 @@ namespace RPGGame.DesktopClient.libinput
         private static Dictionary<string, Keys> _inputMap;
         private static Dictionary<string, bool> _activeKeys;
         private static Dictionary<string, Action> _keyEvents;
+        private static float _deltaTime;
 
         public static event EventHandler LeftClick;
-        public static event EventHandler LeftPress;
+        public static event EventHandler<MovementEventArgs> LeftPress;
         public static event EventHandler LeftRelease;
         public static event EventHandler RightClick;
-        public static event EventHandler RightPress;
+        public static event EventHandler<MovementEventArgs> RightPress;
         public static event EventHandler RightRelease;
         public static event EventHandler UpClick;
-        public static event EventHandler UpPress;
+        public static event EventHandler<MovementEventArgs> UpPress;
         public static event EventHandler UpRelease;
         public static event EventHandler DownClick;
-        public static event EventHandler DownPress;
+        public static event EventHandler<MovementEventArgs> DownPress;
         public static event EventHandler DownRelease;
 
         public static void Initialize()
@@ -42,19 +43,19 @@ namespace RPGGame.DesktopClient.libinput
             {
 
                 { "LeftKeyClick", delegate() { LeftClick?.Invoke(null, EventArgs.Empty); } },
-                { "LeftKeyPress", delegate () { LeftPress?.Invoke(null, EventArgs.Empty); } },
+                { "LeftKeyPress", delegate () { OnLeftPressed(1.0f); } },
                 { "LeftKeyRelease", delegate () { LeftRelease?.Invoke(null, EventArgs.Empty); } },
 
                 { "RightKeyClick", delegate () { RightClick?.Invoke(null, EventArgs.Empty); } },
-                { "RightKeyPress", delegate () { RightPress?.Invoke(null, EventArgs.Empty); } },
+                { "RightKeyPress", delegate () {  OnRightPressed(1.0f); } },
                 { "RightKeyRelease", delegate () { RightRelease?.Invoke(null, EventArgs.Empty); } },
 
                 { "DownKeyClick", delegate () { DownClick?.Invoke(null, EventArgs.Empty); } },
-                { "DownKeyPress", delegate () { DownPress?.Invoke(null, EventArgs.Empty); } },
+                { "DownKeyPress", delegate () {  OnDownPressed(1.0f); } },
                 { "DownKeyRelease", delegate () { DownRelease?.Invoke(null, EventArgs.Empty); } },
 
                 { "UpKeyClick", delegate () { UpClick?.Invoke(null, EventArgs.Empty); } },
-                { "UpKeyPress", delegate () { UpPress?.Invoke(null, EventArgs.Empty); } },
+                { "UpKeyPress", delegate () {  OnUpPressed(1.0f); } },
                 { "UpKeyRelease", delegate () { UpRelease?.Invoke(null, EventArgs.Empty); } }
 
             };
@@ -62,9 +63,15 @@ namespace RPGGame.DesktopClient.libinput
 
         public static void Update(GameTime gameTime)
         {
+            _deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            ProcessKeyboard();
+        }
+
+        private static void ProcessKeyboard()
+        {
             KeyboardState _keyState = Keyboard.GetState();
 
-            foreach(string key in _inputMap.Keys)
+            foreach (string key in _inputMap.Keys)
             {
                 if (_keyState.IsKeyDown(_inputMap[key]))
                 {
@@ -88,6 +95,26 @@ namespace RPGGame.DesktopClient.libinput
                     _activeKeys[key] = false;
                 }
             }
+        }
+
+        private static void OnLeftPressed(float tilt)
+        {
+            LeftPress?.Invoke(null, new MovementEventArgs(tilt, _deltaTime));
+        }
+
+        private static void OnRightPressed(float tilt)
+        {
+            RightPress?.Invoke(null, new MovementEventArgs(tilt, _deltaTime));
+        }
+
+        private static void OnUpPressed(float tilt)
+        {
+            UpPress?.Invoke(null, new MovementEventArgs(tilt, _deltaTime));
+        }
+
+        private static void OnDownPressed(float tilt)
+        {
+            DownPress?.Invoke(null, new MovementEventArgs(tilt, _deltaTime));
         }
     }
 }

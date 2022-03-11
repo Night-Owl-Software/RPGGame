@@ -15,9 +15,16 @@ namespace RPGGame.DesktopClient
         private Dictionary<string, Animation> _animationMap;
         private Vector2 _position;
         private Vector2 _size;
+        private float _moveSpeed;
+        private float _jumpSpeed;
+        private float _gravity;
+        private float _maxFallSpeed;
+        private bool _isGrounded;
+        private bool _isMoving;
+        private bool _isJumping;
         private Rectangle _drawRect;
         
-        public PlayerCharacter(Vector2 position, Vector2 size)
+        public PlayerCharacter(Vector2 position, Vector2 size, float moveSpeed)
         {
             _animationMap = new Dictionary<string, Animation>();
 
@@ -34,13 +41,20 @@ namespace RPGGame.DesktopClient
             _animationControl = new AnimationController(_animationMap["PlayerIdle"], 0.1f);
             _position = position;
             _size = size;
+            _moveSpeed = moveSpeed;
+            _jumpSpeed = moveSpeed * 2.0f;
+
+            _isGrounded = true;
+            _isMoving = false;
+            _isJumping = false;
+
             UpdateDrawRect();
 
             // Register Events
-            Input.LeftClick += OnLeftPressed;
-            Input.RightClick += OnRightPressed;
-            Input.DownClick += OnDownPressed;
-            Input.UpClick += OnUpPressed;
+            Input.LeftPress += OnLeftPressed;
+            Input.RightPress += OnRightPressed;
+            Input.DownPress += OnDownPressed;
+            Input.UpPress += OnUpPressed;
         }
 
         private void UpdateDrawRect()
@@ -58,9 +72,9 @@ namespace RPGGame.DesktopClient
             _animationControl.Draw(spriteBatch, _drawRect);
         }
 
-        private void OnLeftPressed(object sender, EventArgs e)
+        private void OnLeftPressed(object sender, MovementEventArgs e)
         {
-            int _x = (int)_position.X - (int)_size.X;
+            int _x = (int)_position.X - (int)(_moveSpeed * e.DeltaTime);
 
             if( _x < 0)
             {
@@ -71,9 +85,9 @@ namespace RPGGame.DesktopClient
             UpdateDrawRect();
         }
 
-        private void OnRightPressed(object sender, EventArgs e)
+        private void OnRightPressed(object sender, MovementEventArgs e)
         {
-            int _x = (int)_position.X + (int)_size.X;
+            int _x = (int)_position.X + (int)(_moveSpeed * e.DeltaTime);
 
             if (_x > (800 - _size.X))
             {
@@ -84,9 +98,9 @@ namespace RPGGame.DesktopClient
             UpdateDrawRect();
         }
 
-        private void OnDownPressed(object sender, EventArgs e)
+        private void OnDownPressed(object sender, MovementEventArgs e)
         {
-            int _y = (int)_position.Y + (int)_size.Y;
+            int _y = (int)_position.Y + (int)(_moveSpeed * e.DeltaTime);
 
             if (_y > (600 - _size.Y))
             {
@@ -97,9 +111,9 @@ namespace RPGGame.DesktopClient
             UpdateDrawRect();
         }
 
-        private void OnUpPressed(object sender, EventArgs e)
+        private void OnUpPressed(object sender, MovementEventArgs e)
         {
-            int _y = (int)_position.Y - (int)_size.Y;
+            int _y = (int)_position.Y - (int)(_moveSpeed * e.DeltaTime);
 
             if (_y < 0)
             {

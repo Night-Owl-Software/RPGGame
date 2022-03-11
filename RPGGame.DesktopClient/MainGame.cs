@@ -4,7 +4,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using RPGGame.DesktopClient.libanim;
+using MonoGame.Extended.Screens;
+using MonoGame.Extended.Screens.Transitions;
 using RPGGame.DesktopClient.libgfx;
 using RPGGame.DesktopClient.libinput;
 
@@ -12,15 +13,20 @@ namespace RPGGame.DesktopClient
 {
     public class MainGame : Game
     {
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
-        private PlayerCharacter _character;
+        public GraphicsDeviceManager GraphicsManager;
+        public SpriteBatch SpriteBatch;
+        private ScreenManager _screenManager = new ScreenManager();
+        private TestGameScreen _testScreen;
 
         public MainGame()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            GraphicsManager = new GraphicsDeviceManager(this);
+            
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+
+            _screenManager.Initialize();
+            Components.Add(_screenManager);
         }
 
         protected override void Initialize()
@@ -28,13 +34,15 @@ namespace RPGGame.DesktopClient
             GFX.Initialize(Content);
             Input.Initialize();
 
-            _character = new PlayerCharacter(new Vector2(320, 320), new Vector2(32, 32));
+            _testScreen = new TestGameScreen(this);
+            _screenManager.LoadScreen(_testScreen, new FadeTransition(GraphicsDevice, Color.Black));
+
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            SpriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
@@ -43,20 +51,14 @@ namespace RPGGame.DesktopClient
                 Exit();
 
             Input.Update(gameTime);
-            _character.Update(gameTime);
+            _screenManager.Update(gameTime);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            _spriteBatch.Begin();
-
-            _character.Draw(_spriteBatch);
-
-            _spriteBatch.End();
+            _screenManager.Draw(gameTime);
 
             base.Draw(gameTime);
         }

@@ -10,6 +10,7 @@
 
 #-------------------------------- References --------------------------------#
 
+/reference:..\..\..\..\..\.nuget\packages\monogame.extended.content.pipeline\3.8.0\tools\MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
 
@@ -24,4 +25,9 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Graphics/Texture/TestSprite.png
+
+#begin Scenes/Tiled/TestMap.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:Scenes/Tiled/TestMap.tmx
 
