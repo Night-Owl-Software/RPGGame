@@ -9,99 +9,104 @@ namespace RPGGame.DesktopClient
     {
         private Vector2 _position;
         private Vector2 _size;
-        private Rectangle _boundingbox;
+        private Rectangle _collisionbox;
         private Point _center;
         private bool _isSlope;
         private int _slopeLeftHeight;
         private int _slopeRightHeight;
 
+        public Rectangle Collisionbox
+        {
+            get { return _collisionbox; }
+        }
+
         public CollisionObject(Vector2 position, Vector2 size)
         {
             _position = position;
             _size = size;
-            _boundingbox = new Rectangle(
+            _collisionbox = new Rectangle(
                 (int)_position.X,
                 (int)_position.Y,
                 (int)_size.X,
                 (int)size.Y);
             _center = new Point(
-                (_boundingbox.Left + _boundingbox.Right) / 2,
-                (_boundingbox.Top + _boundingbox.Bottom) / 2);
+                (_collisionbox.Left + _collisionbox.Right) / 2,
+                (_collisionbox.Top + _collisionbox.Bottom) / 2);
         }
 
         public bool CheckForCollision(Rectangle boundingbox)
         {
-            if (_boundingbox.Intersects(boundingbox)) { return true; }
+            if (_collisionbox.Intersects(boundingbox)) { return true; }
             return false;
         }
 
-        public Rectangle AdjustCollision(Rectangle boundingbox, out bool isCollisionBelow)
-        {
-            Point _senderCenter = new Point(
-                (boundingbox.Left + _boundingbox.Right) / 2,
-                (boundingbox.Top+ _boundingbox.Bottom) / 2);
+        //public Rectangle AdjustCollision(Rectangle boundingbox, out bool isCollisionBelow)
+        //{
+        //    Point _senderCenter = new Point(
+        //        (boundingbox.Left + _collisionbox.Right) / 2,
+        //        (boundingbox.Top+ _collisionbox.Bottom) / 2);
 
-            int _newX = boundingbox.Left;       // X of the Colliding Object after being moved out of intersection
-            int _newY = boundingbox.Top;        // Y of the Colliding Object after being moved out of intersection
-            isCollisionBelow = false;           // Assume the collision is NOT below to start
+        //    int _newX = boundingbox.Left;       // X of the Colliding Object after being moved out of intersection
+        //    int _newY = boundingbox.Top;        // Y of the Colliding Object after being moved out of intersection
+        //    isCollisionBelow = false;           // Assume the collision is NOT below to start
 
-            Rectangle _intersect = CollisionHelper.GetCollisionIntersect(_boundingbox, boundingbox); // Intersection Overlap Rectangle
+        //    Rectangle _intersect = CollisionHelper.GetCollisionIntersect(_collisionbox, boundingbox); // Intersection Overlap Rectangle
 
-            bool _isSenderLeft = false;     // Is the colliding Object's center to the left of ours?
-            bool _isSenderRight = false;    // Is the colliding Object's center to the right ours?
-            bool _isSenderBelow = false;    // Is the colliding Object's center below ours?
-            bool _isSenderAbove = false;    // Is the colliding Object's center above ours?
+        //    bool _isSenderLeft = false;     // Is the colliding Object's center to the left of ours?
+        //    bool _isSenderRight = false;    // Is the colliding Object's center to the right ours?
+        //    bool _isSenderBelow = false;    // Is the colliding Object's center below ours?
+        //    bool _isSenderAbove = false;    // Is the colliding Object's center above ours?
 
-            // Check if Sender is to the left or right of our center
-            if(_center.X > _senderCenter.X) { _isSenderLeft = true; }
-            else if(_center.X < _senderCenter.X) { _isSenderRight = true; }
+        //    // Check if Sender is to the left or right of our center
+        //    if(_center.X > _senderCenter.X) { _isSenderLeft = true; }
+        //    else if(_center.X < _senderCenter.X) { _isSenderRight = true; }
             
-            // Check if Sender is above or below our center
-            if(_center.Y > _senderCenter.Y) { _isSenderBelow = true;}
-            else if(_center.Y < _senderCenter.Y) { _isSenderAbove = true;}
+        //    // Check if Sender is above or below our center
+        //    if(_center.Y > _senderCenter.Y) { _isSenderBelow = true;}
+        //    else if(_center.Y < _senderCenter.Y) { _isSenderAbove = true;}
 
-            // Use the previous BOOLs to move the Sender out of the collision
-            if (_isSenderLeft)
-            {
-                // Move Sender RIGHT
-                _newX = boundingbox.Left - _intersect.Width;
-            }
+        //    // Use the previous BOOLs to move the Sender out of the collision
+        //    if (_isSenderLeft)
+        //    {
+        //        // Move Sender RIGHT
+        //        _newX = boundingbox.Left - _intersect.Width;
+        //    }
 
-            if (_isSenderRight)
-            {
-                // Move Sender LEFT
-                _newX = boundingbox.Left + _intersect.Width;
-            }
+        //    if (_isSenderRight)
+        //    {
+        //        // Move Sender LEFT
+        //        _newX = boundingbox.Left + _intersect.Width;
+        //    }
 
-            // Check if adjusting Left/Right still results in an intersect with us
-            Rectangle _proposedSolution = new Rectangle(_newX, _newY, boundingbox.Width, boundingbox.Height);
-            int _totalMove = Math.Abs(boundingbox.X - _newX);
+        //    // Check if adjusting Left/Right still results in an intersect with us
+        //    Rectangle _proposedSolution = new Rectangle(_newX, _newY, boundingbox.Width, boundingbox.Height);
+        //    int _totalMove = Math.Abs(boundingbox.X - _newX);
 
-            // If moving left/right does NOT fix the problem, then we need to move up/down to fix it instead
-            if (_boundingbox.Intersects(_proposedSolution) || (_totalMove > _intersect.Height))
-            {
-                if (_isSenderBelow)
-                {
-                    // Move Sender DOWN
-                    _newY = boundingbox.Top - _intersect.Height;
-                    isCollisionBelow = true;
-                }
+        //    // If moving left/right does NOT fix the problem, then we need to move up/down to fix it instead
+        //    if (_collisionbox.Intersects(_proposedSolution) || (_totalMove > _intersect.Height))
+        //    {
+        //        if (_isSenderBelow)
+        //        {
+        //            // Move Sender DOWN
+        //            _newY = boundingbox.Top - _intersect.Height;
+        //            isCollisionBelow = true;
+        //        }
 
-                if (_isSenderAbove)
-                {
-                    // Move Sender UP
-                    _newY = boundingbox.Top + _intersect.Height;
+        //        if (_isSenderAbove)
+        //        {
+        //            // Move Sender UP
+        //            _newY = boundingbox.Top + _intersect.Height;
                     
-                }
+        //        }
 
-                return new Rectangle(boundingbox.X, _newY, boundingbox.Width, boundingbox.Height);
-            }
-            else
-            {
-                // If moving left/right DID fix the problem, then simply return that solution
-                return _proposedSolution;
-            }
-        }
+        //        return new Rectangle(boundingbox.X, _newY, boundingbox.Width, boundingbox.Height);
+        //    }
+        //    else
+        //    {
+        //        // If moving left/right DID fix the problem, then simply return that solution
+        //        return _proposedSolution;
+        //    }
+        //}
 
         public void SetSlopeData(int heightFromTopLeft, int heightFromTopRight)
         {

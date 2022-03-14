@@ -58,9 +58,10 @@ namespace RPGGame.DesktopClient
                         new Vector2((int)obj.Position.X, (int)obj.Position.Y),
                         new Vector2(32, 32),
                         192f,
-                        416f);
+                        364f);
 
                     _player.Moved += OnPlayerMoved;
+                    _player.CheckForFall += OnPlayerCheckForFalling;
                 }
             }
 
@@ -122,53 +123,32 @@ namespace RPGGame.DesktopClient
 
         private void OnPlayerMoved(object sender, PlayerMoveEventArgs e)
         {
-            List<CollisionObject> _collisions = new List<CollisionObject>();
             PlayerCharacter _sender = sender as PlayerCharacter;
-            Rectangle _senderBoundingbox = e.ProposedBoundingbox;
+            Rectangle _senderCollisionbox = e.Collisionbox;
 
             foreach(CollisionObject obj in _collisionObjects)
             {
-                if (obj.CheckForCollision(_senderBoundingbox))
+                if (obj.CheckForCollision(_senderCollisionbox))
                 {
-                    _collisions.Add(obj);
+                    _sender.Collide(obj, out _senderCollisionbox);
+                }
+            }
+        }
+
+        private void OnPlayerCheckForFalling(object sender, PlayerMoveEventArgs e)
+        {
+            PlayerCharacter _sender = sender as PlayerCharacter;
+            Rectangle _senderLandingbox = e.Landingbox;
+
+            foreach (CollisionObject obj in _collisionObjects)
+            {
+                if (obj.CheckForCollision(_senderLandingbox))
+                {
+                    return;
                 }
             }
 
-            if( _collisions.Count > 0)
-            {
-                bool isGrounded = false;
-
-                for (int i = _collisions.Count - 1; i >= 0; i--)
-                {
-                    bool isCollisionBelow = false;
-
-                    CollisionObject _collision = _collisions[i];
-                    _senderBoundingbox = _collision.AdjustCollision(_senderBoundingbox, out isCollisionBelow);
-                    _collisions.RemoveAt(i);
-
-                    if (!isGrounded && isCollisionBelow)
-                    {
-                        isGrounded = true;
-                    }
-
-                    if(i > 0)
-                    {
-                        for(int j = i - 1; j > 0; j--)
-                        {
-                            if (!_collisions[j].CheckForCollision(_senderBoundingbox))
-                            {
-                                _collisions.RemoveAt(j);
-                            }
-                        }
-                    }
-                }
-
-                _sender.UpdateMovement(_senderBoundingbox);
-            }
-            else
-            {
-                _sender.UpdateMovement(_senderBoundingbox);
-            }
+            _sender.Fall();
         }
     }
 }
