@@ -35,7 +35,7 @@ namespace RPGGame.DesktopClient
             return false;
         }
 
-        public Rectangle AdjustCollision(Rectangle boundingbox)
+        public Rectangle AdjustCollision(Rectangle boundingbox, out bool isCollisionBelow)
         {
             Point _senderCenter = new Point(
                 (boundingbox.Left + _boundingbox.Right) / 2,
@@ -43,6 +43,7 @@ namespace RPGGame.DesktopClient
 
             int _newX = boundingbox.Left;       // X of the Colliding Object after being moved out of intersection
             int _newY = boundingbox.Top;        // Y of the Colliding Object after being moved out of intersection
+            isCollisionBelow = false;           // Assume the collision is NOT below to start
 
             Rectangle _intersect = CollisionHelper.GetCollisionIntersect(_boundingbox, boundingbox); // Intersection Overlap Rectangle
 
@@ -83,12 +84,14 @@ namespace RPGGame.DesktopClient
                 {
                     // Move Sender DOWN
                     _newY = boundingbox.Top - _intersect.Height;
+                    isCollisionBelow = true;
                 }
 
                 if (_isSenderAbove)
                 {
                     // Move Sender UP
                     _newY = boundingbox.Top + _intersect.Height;
+                    
                 }
 
                 return new Rectangle(boundingbox.X, _newY, boundingbox.Width, boundingbox.Height);

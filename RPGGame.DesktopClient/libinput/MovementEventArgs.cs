@@ -18,6 +18,8 @@ namespace RPGGame.DesktopClient.libinput
         /// </summary>
         public float DeltaTime { get; }
 
+        public bool IsGrounded { get; }
+
         public MovementEventArgs(float tilt, float deltaTime)
         {
             Tilt = tilt;

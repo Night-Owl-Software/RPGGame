@@ -57,7 +57,8 @@ namespace RPGGame.DesktopClient
                     _player = new PlayerCharacter(
                         new Vector2((int)obj.Position.X, (int)obj.Position.Y),
                         new Vector2(32, 32),
-                        128f);
+                        192f,
+                        416f);
 
                     _player.Moved += OnPlayerMoved;
                 }
@@ -135,11 +136,20 @@ namespace RPGGame.DesktopClient
 
             if( _collisions.Count > 0)
             {
-                for(int i = _collisions.Count - 1; i >= 0; i--)
+                bool isGrounded = false;
+
+                for (int i = _collisions.Count - 1; i >= 0; i--)
                 {
+                    bool isCollisionBelow = false;
+
                     CollisionObject _collision = _collisions[i];
-                    _senderBoundingbox = _collision.AdjustCollision(_senderBoundingbox);
+                    _senderBoundingbox = _collision.AdjustCollision(_senderBoundingbox, out isCollisionBelow);
                     _collisions.RemoveAt(i);
+
+                    if (!isGrounded && isCollisionBelow)
+                    {
+                        isGrounded = true;
+                    }
 
                     if(i > 0)
                     {

@@ -21,13 +21,18 @@ namespace RPGGame.DesktopClient
 
     internal class PlayerCharacter
     {
+        private const int _landingboxHeight = 4;
+
         private AnimationController _animationControl;
         private Dictionary<string, Animation> _animationMap;
         private Vector2 _position;
+        private Vector2 _previousPosition;
         private Vector2 _size;
         private Rectangle _boundingbox;
+        private Rectangle _landingbox;
         private float _moveSpeed;
         private float _jumpSpeed;
+        private float _vSpeed;
         private float _gravity;
         private float _maxFallSpeed;
         private bool _isGrounded;
@@ -35,11 +40,17 @@ namespace RPGGame.DesktopClient
         private bool _isJumping;
         private Rectangle _drawRect;
 
+        public bool IsGrounded
+        {
+            get { return _isGrounded; }
+            set { _isGrounded = value; }
+        }
+
         private Texture2D _debugTexture;
 
         public event EventHandler<PlayerMoveEventArgs> Moved;
         
-        public PlayerCharacter(Vector2 position, Vector2 size, float moveSpeed, float gravity = 96f)
+        public PlayerCharacter(Vector2 position, Vector2 size, float moveSpeed, float jumpspeed, float gravity = 0.2f)
         {
             _animationMap = new Dictionary<string, Animation>();
 
@@ -56,9 +67,12 @@ namespace RPGGame.DesktopClient
 
             _animationControl = new AnimationController(_animationMap["PlayerIdle"], 0.1f);
             _position = position;
+            _previousPosition = position;
             _size = size;
             _moveSpeed = moveSpeed;
-            _jumpSpeed = moveSpeed * 2.0f;
+            _jumpSpeed = jumpspeed;
+            _gravity = gravity;
+            _maxFallSpeed = _moveSpeed * 3.5f;
 
             _isGrounded = true;
             _isMoving = false;
@@ -71,7 +85,7 @@ namespace RPGGame.DesktopClient
             Input.LeftPress += OnLeftPressed;
             Input.RightPress += OnRightPressed;
             Input.DownPress += OnDownPressed;
-            Input.UpPress += OnUpPressed;
+            Input.UpClick += OnUpPressed;
         }
 
         private void UpdateDrawRect()
@@ -90,24 +104,58 @@ namespace RPGGame.DesktopClient
                 (int)_position.Y,
                 (int)_size.X,
                 (int)_size.Y);
+
+            _landingbox = new Rectangle(
+                _boundingbox.Left,
+                _boundingbox.Bottom,
+                _boundingbox.Width,
+                _landingboxHeight);
         }
 
         public void Update(GameTime gameTime)
         {
             _animationControl.Update(gameTime);
+
+            if (!_isGrounded)
+            {
+                Rectangle _tempLandingbox = new Rectangle(
+                    _landingbox.Left,
+                    _landingbox.Top,
+                    _landingbox.Width,
+                    _landingbox.Height);
+
+                if(Math.Abs(_vSpeed) < _maxFallSpeed)
+                {
+                    _vSpeed += _gravity;
+                }
+
+                Rectangle _proposedBoundingbox = new Rectangle(
+                    (int)_position.X,
+                    (int)_position.Y + (int)_vSpeed,
+                    _boundingbox.Width,
+                    _boundingbox.Height);
+
+                Moved?.Invoke(this, new PlayerMoveEventArgs(_proposedBoundingbox));
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             _animationControl.Draw(spriteBatch, _drawRect);
-            spriteBatch.Draw(_debugTexture, _boundingbox, Color.White * 0.5f);
+            //spriteBatch.Draw(_debugTexture, _boundingbox, Color.White * 0.5f);
         }
 
         public void UpdateMovement(Rectangle proposedBoundingbox)
         {
+            _previousPosition = new Vector2((int)_position.X, (int)_position.Y);
             _position = new Vector2(proposedBoundingbox.Left, proposedBoundingbox.Top);
             UpdateBoundingbox();
             UpdateDrawRect();
+        }
+
+        public void LandOnGround()
+        {
+            _isGrounded = true;
         }
 
         private void OnLeftPressed(object sender, MovementEventArgs e)
@@ -151,16 +199,22 @@ namespace RPGGame.DesktopClient
         }
         private void OnUpPressed(object sender, MovementEventArgs e)
         {
-            int _y = (int)_position.Y - (int)(_moveSpeed * e.DeltaTime);
-            _position = new Vector2(_position.X, _y);
+            if (_isGrounded)
+            {
+                _isGrounded = false;
+                _vSpeed = -(_jumpSpeed * e.DeltaTime);
 
-            Rectangle proposed = new Rectangle(
-                (int)_position.X,
-                (int)_position.Y,
-                _boundingbox.Width,
-                _boundingbox.Height);
+                int _y = (int)_position.Y - (int)(_jumpSpeed * e.DeltaTime);
+                _position = new Vector2(_position.X, _y);
 
-            Moved?.Invoke(this, new PlayerMoveEventArgs(proposed));
+                Rectangle proposed = new Rectangle(
+                    (int)_position.X,
+                    (int)_position.Y,
+                    _boundingbox.Width,
+                    _boundingbox.Height);
+
+                Moved?.Invoke(this, new PlayerMoveEventArgs(proposed));
+            }
         }
     }
 }

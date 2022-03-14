@@ -22,7 +22,7 @@ namespace RPGGame.DesktopClient.libinput
         public static event EventHandler RightClick;
         public static event EventHandler<MovementEventArgs> RightPress;
         public static event EventHandler RightRelease;
-        public static event EventHandler UpClick;
+        public static event EventHandler<MovementEventArgs> UpClick;
         public static event EventHandler<MovementEventArgs> UpPress;
         public static event EventHandler UpRelease;
         public static event EventHandler DownClick;
@@ -54,7 +54,7 @@ namespace RPGGame.DesktopClient.libinput
                 { "DownKeyPress", delegate () {  OnDownPressed(1.0f); } },
                 { "DownKeyRelease", delegate () { DownRelease?.Invoke(null, EventArgs.Empty); } },
 
-                { "UpKeyClick", delegate () { UpClick?.Invoke(null, EventArgs.Empty); } },
+                { "UpKeyClick", delegate () { UpClick?.Invoke(null, new MovementEventArgs(1.0f, _deltaTime)); } },
                 { "UpKeyPress", delegate () {  OnUpPressed(1.0f); } },
                 { "UpKeyRelease", delegate () { UpRelease?.Invoke(null, EventArgs.Empty); } }
 
