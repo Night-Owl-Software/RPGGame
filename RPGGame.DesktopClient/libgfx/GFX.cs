@@ -30,11 +30,6 @@ namespace RPGGame.DesktopClient.libgfx
         private static void InitializeSpritesheetMap()
         {
             _textureMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(_gfxJsonPath));
-
-            //_textureMap = new Dictionary<string, string>()
-            //{
-            //    { "sprPlayer", "Spritesheet/TestSprite" }
-            //};
         }
 
         public static Texture2D GetSpriteSheet(string spritesheetId)

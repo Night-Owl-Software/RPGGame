@@ -9,12 +9,23 @@ using RPGGame.DesktopClient.libinput;
 
 namespace RPGGame.DesktopClient
 {
+    public class PlayerMoveEventArgs : EventArgs
+    {
+        public Rectangle ProposedBoundingbox { get; }
+
+        public PlayerMoveEventArgs(Rectangle proposedBoundingbox)
+        {
+            ProposedBoundingbox = proposedBoundingbox;
+        }
+    }
+
     internal class PlayerCharacter
     {
         private AnimationController _animationControl;
         private Dictionary<string, Animation> _animationMap;
         private Vector2 _position;
         private Vector2 _size;
+        private Rectangle _boundingbox;
         private float _moveSpeed;
         private float _jumpSpeed;
         private float _gravity;
@@ -23,12 +34,17 @@ namespace RPGGame.DesktopClient
         private bool _isMoving;
         private bool _isJumping;
         private Rectangle _drawRect;
+
+        private Texture2D _debugTexture;
+
+        public event EventHandler<PlayerMoveEventArgs> Moved;
         
-        public PlayerCharacter(Vector2 position, Vector2 size, float moveSpeed)
+        public PlayerCharacter(Vector2 position, Vector2 size, float moveSpeed, float gravity = 96f)
         {
             _animationMap = new Dictionary<string, Animation>();
 
             Texture2D _spritesheet = GFX.GetSpriteSheet("TestPlayer");
+            _debugTexture = GFX.GetSpriteSheet("DebugTexture");
             Animation _animationIdle = new Animation(
                 _spritesheet, 
                 new Vector2(0, 0), 
@@ -48,6 +64,7 @@ namespace RPGGame.DesktopClient
             _isMoving = false;
             _isJumping = false;
 
+            UpdateBoundingbox();
             UpdateDrawRect();
 
             // Register Events
@@ -59,7 +76,20 @@ namespace RPGGame.DesktopClient
 
         private void UpdateDrawRect()
         {
-            _drawRect = new Rectangle((int)_position.X, (int)_position.Y, (int)_size.X, (int)_size.Y);
+            _drawRect = new Rectangle(
+                (int)_position.X, 
+                (int)_position.Y, 
+                (int)_size.X, 
+                (int)_size.Y);
+        }
+
+        private void UpdateBoundingbox()
+        {
+            _boundingbox = new Rectangle(
+                (int)_position.X,
+                (int)_position.Y,
+                (int)_size.X,
+                (int)_size.Y);
         }
 
         public void Update(GameTime gameTime)
@@ -70,58 +100,67 @@ namespace RPGGame.DesktopClient
         public void Draw(SpriteBatch spriteBatch)
         {
             _animationControl.Draw(spriteBatch, _drawRect);
+            spriteBatch.Draw(_debugTexture, _boundingbox, Color.White * 0.5f);
+        }
+
+        public void UpdateMovement(Rectangle proposedBoundingbox)
+        {
+            _position = new Vector2(proposedBoundingbox.Left, proposedBoundingbox.Top);
+            UpdateBoundingbox();
+            UpdateDrawRect();
         }
 
         private void OnLeftPressed(object sender, MovementEventArgs e)
         {
             int _x = (int)_position.X - (int)(_moveSpeed * e.DeltaTime);
-
-            if( _x < 0)
-            {
-                _x = 0;
-            }
-
             _position = new Vector2(_x, _position.Y);
-            UpdateDrawRect();
-        }
 
+            Rectangle proposed = new Rectangle(
+                (int)_position.X,
+                (int)_position.Y,
+                _boundingbox.Width,
+                _boundingbox.Height);
+
+            Moved?.Invoke(this, new PlayerMoveEventArgs(proposed));
+        }
         private void OnRightPressed(object sender, MovementEventArgs e)
         {
             int _x = (int)_position.X + (int)(_moveSpeed * e.DeltaTime);
-
-            if (_x > (800 - _size.X))
-            {
-                _x = (800 - (int)_size.X);
-            }
-
             _position = new Vector2(_x, _position.Y);
-            UpdateDrawRect();
-        }
 
+            Rectangle proposed = new Rectangle(
+                (int)_position.X,
+                (int)_position.Y,
+                _boundingbox.Width,
+                _boundingbox.Height);
+
+            Moved?.Invoke(this, new PlayerMoveEventArgs(proposed));
+        }
         private void OnDownPressed(object sender, MovementEventArgs e)
         {
             int _y = (int)_position.Y + (int)(_moveSpeed * e.DeltaTime);
-
-            if (_y > (600 - _size.Y))
-            {
-                _y = (600 - (int)_size.Y);
-            }
-
             _position = new Vector2(_position.X, _y);
-            UpdateDrawRect();
-        }
 
+            Rectangle proposed = new Rectangle(
+                (int)_position.X,
+                (int)_position.Y,
+                _boundingbox.Width,
+                _boundingbox.Height);
+
+            Moved?.Invoke(this, new PlayerMoveEventArgs(proposed));
+        }
         private void OnUpPressed(object sender, MovementEventArgs e)
         {
             int _y = (int)_position.Y - (int)(_moveSpeed * e.DeltaTime);
-
-            if (_y < 0)
-            {
-                _y = 0;
-            }
-
             _position = new Vector2(_position.X, _y);
-            UpdateDrawRect();
+
+            Rectangle proposed = new Rectangle(
+                (int)_position.X,
+                (int)_position.Y,
+                _boundingbox.Width,
+                _boundingbox.Height);
+
+            Moved?.Invoke(this, new PlayerMoveEventArgs(proposed));
         }
     }
 }
