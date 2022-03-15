@@ -143,7 +143,7 @@ namespace RPGGame.DesktopClient
         public void Draw(SpriteBatch spriteBatch)
         {
             _animationControl.Draw(spriteBatch, _drawbox);
-            spriteBatch.Draw(_debugTexture, _landingbox, Color.White * 0.5f);
+            //spriteBatch.Draw(_debugTexture, _landingbox, Color.White * 0.5f);
         }
 
         public void Collide(CollisionObject collision, out Rectangle newCollisionbox)
